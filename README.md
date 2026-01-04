@@ -11,4 +11,4 @@ Lightweight habit &amp; micro-task tracker focused on small daily fixes
 -Backend: API routes or serverless
 -Database: SQLite (Prisma) or Subpase
 ## Status
-MPV in progress - UI and data model ne
+MPV in progress - UI and data model next

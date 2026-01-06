@@ -19,7 +19,7 @@ This repo also served as a learning space while I study software development.
 - Ass plcaholder UI component
 - Learn how app files connect
 
-- ## Questions / Confusiom
+## Questions / Confusiom
 - Where businesses logic shoul live
 - How components talk to data
 - Best practices for early-stage projects

@@ -5,6 +5,6 @@ export default function Home () {
    <main>
    <h1>PocketPatch</h1>
      <PatchCard />
-   </main>main>
+   </main>
    );
 }

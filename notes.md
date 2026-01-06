@@ -1,4 +1,4 @@
-# PocketPatch -  Dve Notes
+# PocketPatch -  Dev Notes
 
 ## Why this project exists
 PocketPatch is a lightwight habit & micro-task tracker.

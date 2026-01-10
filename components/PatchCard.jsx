@@ -27,8 +27,25 @@ const [patches, setPatches] = useState(() => {
     );
   }
   return (
-  <div style={{ padding: "2rem", maxWidth: "480px", margin: "0 auto" }}>
-    <h2 style={{ fontSize: "1.8rem", marginBottom: "1rem" }}>
+  <div
+  style={{
+    padding: "2rem",
+    maxWidth: "480px",
+    margin: "2rem auto",
+    background: "#ffffff",
+    borderRadius: "16px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+    border: "1px solid #eee",
+  }}
+>
+    <h2
+  style={{
+    fontSize: "1.9rem",
+    marginBottom: "1rem",
+    fontWeight: "700",
+    letterSpacing: "-0.5px",
+  }}
+>
       🌱 PocketPatch
     </h2>
 
@@ -40,8 +57,8 @@ const [patches, setPatches] = useState(() => {
         style={{
           flex: 1,
           padding: "0.6rem",
-          borderRadius: "6px",
-          border: "1px solid #ccc",
+          borderRadius: "10px",
+          border: "1px solid #ddd",
         }}
       />
 

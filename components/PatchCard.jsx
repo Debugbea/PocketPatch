@@ -1,10 +1,22 @@
 "use client";
 
-import { useState } from "react";
-
+import { useEffect, useState } from "react";
 export default function PatchCard() {
   const [patchText, setPatchText] = useState("");
-  const [patches, setPatches] = useState([]);
+
+  const [patches, setPatches] = useState(() => {
+    if (typeof window === "undefined") return [];
+    const saved = localStorage.getItem("pocketpatch_patches");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(
+      "pocketpatch_patches",
+      JSON.stringify(patches)
+    );
+  }, [patches]);
+
 
   function addPatch() {
     const text = patchText.trim();

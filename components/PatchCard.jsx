@@ -4,19 +4,14 @@ import { useEffect, useState } from "react";
 export default function PatchCard() {
   const [patchText, setPatchText] = useState("");
 
-  const [patches, setPatches] = useState(() => {
+const [patches, setPatches] = useState(() => {
     if (typeof window === "undefined") return [];
     const saved = localStorage.getItem("pocketpatch_patches");
     return saved ? JSON.parse(saved) : [];
-  });
-
-  useEffect(() => {
-    localStorage.setItem(
-      "pocketpatch_patches",
-      JSON.stringify(patches)
-    );
+  });  
+ useEffect(() => {
+    localStorage.setItem("pocketpatch_patches", JSON.stringify(patches));
   }, [patches]);
-
 
   function addPatch() {
     const text = patchText.trim();
@@ -31,92 +26,75 @@ export default function PatchCard() {
       prev.map((p) => (p.id === id ? { ...p, done: !p.done } : p))
     );
   }
-
   return (
-    <div style={{ display: "grid", gap: "1rem" }}>
-      <div style={{ display: "grid", gap: "0.5rem" }}>
-        <label style={{ fontWeight: 600 }}>Create a patch</label>
+  <div style={{ padding: "2rem", maxWidth: "480px", margin: "0 auto" }}>
+    <h2 style={{ fontSize: "1.8rem", marginBottom: "1rem" }}>
+      🌱 PocketPatch
+    </h2>
 
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <input
-            value={patchText}
-            onChange={(e) => setPatchText(e.target.value)}
-            placeholder="Example: Drink water, 10-min walk, read 5 pages…"
+    <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+      <input
+        value={patchText}
+        onChange={(e) => setPatchText(e.target.value)}
+        placeholder="Add a small habit..."
+        style={{
+          flex: 1,
+          padding: "0.6rem",
+          borderRadius: "6px",
+          border: "1px solid #ccc",
+        }}
+      />
+
+      <button
+        onClick={addPatch}
+        style={{
+          padding: "0.6rem 1rem",
+          borderRadius: "6px",
+          border: "none",
+          background: "#4f46e5",
+          color: "white",
+          cursor: "pointer",
+        }}
+      >
+        Add
+      </button>
+    </div>
+
+    <div style={{ display: "grid", gap: "0.5rem" }}>
+      {patches.map((p) => (
+        <div
+          key={p.id}
+          style={{
+            padding: "0.6rem",
+            borderRadius: "6px",
+            background: p.done ? "#dcfce7" : "#f1f5f9",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span
             style={{
-              flex: 1,
-              padding: "0.75rem",
-              borderRadius: "10px",
-              border: "1px solid #ddd",
-              outline: "none",
+              textDecoration: p.done ? "line-through" : "none",
             }}
-          />
+          >
+            {p.text}
+          </span>
 
           <button
-            onClick={addPatch}
+            onClick={() => toggleDone(p.id)}
             style={{
-              padding: "0.75rem 1rem",
-              borderRadius: "10px",
-              border: "1px solid #111",
-              background: "#111",
-              color: "white",
+              border: "none",
+              background: "transparent",
               cursor: "pointer",
               fontWeight: 600,
             }}
           >
-            Add
+            {p.done ? "Undo" : "Done"}
           </button>
         </div>
-      </div>
-
-      <div style={{ display: "grid", gap: "0.5rem" }}>
-        <div style={{ fontWeight: 600 }}>Your patches</div>
-
-        {patches.length === 0 ? (
-          <div style={{ color: "#666" }}>
-            No patches yet — add your first one above.
-          </div>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            {patches.map((p) => (
-              <li
-                key={p.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "0.75rem",
-                  padding: "0.75rem",
-                  border: "1px solid #eee",
-                  borderRadius: "12px",
-                }}
-              >
-                <span
-                  style={{
-                    textDecoration: p.done ? "line-through" : "none",
-                    color: p.done ? "#888" : "#111",
-                  }}
-                >
-                  {p.text}
-                </span>
-
-                <button
-                  onClick={() => toggleDone(p.id)}
-                  style={{
-                    padding: "0.4rem 0.75rem",
-                    borderRadius: "999px",
-                    border: "1px solid #ddd",
-                    background: "white",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
-                  {p.done ? "Undo" : "Done"}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      ))}
     </div>
-  );
-}
+  </div>
+);
+}  

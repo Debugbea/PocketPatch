@@ -12,3 +12,11 @@ Lightweight habit &amp; micro-task tracker focused on small daily fixes
 -Database: SQLite (Prisma) or Subpase
 ## Status
 MVP in progress - UI and data model next
+
+## Next Spring Goals
+
+- [  ] Build basic UI layout
+- [  ] Add patch imput form
+- [  ] Store oatches in local storage
+- [  ] Display active vs completed patches
+- [  ] Polish mobile layout

@@ -67,12 +67,15 @@ const [patches, setPatches] = useState(() => {
       <button
         onClick={addPatch}
         style={{
-          padding: "0.6rem 1rem",
-          borderRadius: "6px",
-          border: "none",
-          background: "#4f46e5",
-          color: "white",
-          cursor: "pointer",
+  padding: "0.85rem 1.1rem",
+  borderRadius: "12px",
+  border: "1px solid #111827",
+  background: "#111827",
+  color: "#ffffff",
+  fontWeight: "700",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+}}
         }}
       >
         Add
@@ -84,17 +87,22 @@ const [patches, setPatches] = useState(() => {
         <div
           key={p.id}
           style={{
-            padding: "0.6rem",
-            borderRadius: "6px",
-            background: p.done ? "#dcfce7" : "#f1f5f9",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "0.75rem",
+  padding: "0.9rem 1rem",
+  borderRadius: "12px",
+  border: "1px solid #e5e7eb",
+  background: p.done ? "#ecfdf5" : "#ffffff",
+  boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+}}
         >
           <span
             style={{
               textDecoration: p.done ? "line-through" : "none",
+              color: p.done ?"#065f46" : "#111827",
+              frontWeight: "600",
             }}
           >
             {p.text}

@@ -44,6 +44,8 @@ const [patches, setPatches] = useState(() => {
     marginBottom: "1rem",
     fontWeight: "700",
     letterSpacing: "-0.5px",
+    color: #111827",
+    lineHeight: "1.2"
   }}
 >
       🌱 PocketPatch

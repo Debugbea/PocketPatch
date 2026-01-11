@@ -28,15 +28,15 @@ const [patches, setPatches] = useState(() => {
   }
   return (
   <div
-  style={{
-    padding: "2rem",
-    maxWidth: "480px",
-    margin: "2rem auto",
-    background: "#ffffff",
-    borderRadius: "16px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-    border: "1px solid #eee",
-  }}
+    style={{
+  padding: "2rem",
+  maxWidth: "480px",
+  margin: "3rem auto",
+  background: "#ffffff",
+  borderRadius: "16px",
+  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+  fontFamily: "system-ui, -apple-system, BlinkMacSystemFont",
+}
 >
     <h2
   style={{

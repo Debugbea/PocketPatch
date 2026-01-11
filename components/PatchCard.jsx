@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 export default function PatchCard() {
   const [patchText, setPatchText] = useState("");
-
+  const [justAddedId, setJustAddeddId] = useState(null):
 const [patches, setPatches] = useState(() => {
     if (typeof window === "undefined") return [];
     const saved = localStorage.getItem("pocketpatch_patches");
@@ -14,12 +14,17 @@ const [patches, setPatches] = useState(() => {
   }, [patches]);
 
   function addPatch() {
-    const text = patchText.trim();
-    if (!text) return;
+  const text = patchText.trim();
+  if (!text) return;
 
-    setPatches((prev) => [{ id: Date.now(), text, done: false }, ...prev]);
-    setPatchText("");
-  }
+  const newId = Date.now();
+
+  setPatches((prev) => [{ id: newId, text, done: false }, ...prev]);
+  setPatchText("");
+
+  setJustAddedId(newId);
+  setTimeout(() => setJustAddedId(null), 350);
+}
 
   function toggleDone(id) {
     setPatches((prev) =>
@@ -96,6 +101,8 @@ const [patches, setPatches] = useState(() => {
   border: "1px solid #e5e7eb",
   background: p.done ? "#ecfdf5" : "#ffffff",
   boxShadow: "0 1px 0 rgba(0,0,0,0.03)",
+  transform: justAddedId === p.id ? "scale(1.03)" : "scale(1)",
+transition: "all 0.25s ease",
 }}
         >
           <span

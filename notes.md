@@ -14,7 +14,7 @@ This repo also served as a learning space while I study software development.
 - How README vs notes differ
 - How to document progress clearly
 
-## Next small steops
+## Next small steps
 - Decide initial UI flow
 - Ass plcaholder UI component
 - Learn how app files connect
@@ -23,3 +23,4 @@ This repo also served as a learning space while I study software development.
 - Where businesses logic shoul live
 - How components talk to data
 - Best practices for early-stage projects
+- How to propertlu SAVE THE UI anf fromt end

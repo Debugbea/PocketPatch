@@ -1,14 +1,14 @@
-export default function PatchCard() {
+export default function PatchCard({ title, description, buttonText }) {
   return (
     <div style={styles.card}>
-      <h3 style={styles.title}>Take a Breath</h3>
-      <p style={styles.description}>
-        Pause for 30 seconds and take three deep breaths.
-      </p>
-      <button style={styles.button}>
-        Complete Patch
-      </button>
-    </div>
+  <h3 style={styles.title}>{title}</h3>
+
+  <p style={styles.description}>{description}</p>
+
+  <button style={styles.button}>
+    {buttonText}
+  </button>
+</div>
   );
 }
 

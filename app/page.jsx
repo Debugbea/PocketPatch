@@ -28,7 +28,11 @@ export default function Page() {
           Lightweight habit & micro-task tracker
         </p>
 
-        <PatchCard />
+       <div style={{ display: "grid", gap: "12px" }}>
+  <PatchCard title="Take a Breath" description="Pause for 30 seconds and take three deep breaths." buttonText="Complete Patch" />
+  <PatchCard title="Drink Water" description="Hydrate yourself with a full glass of water." buttonText="Done" />
+  <PatchCard title="Stretch" description="Stand up and stretch your body for 1 minute." buttonText="Finished" />
+</div> 
       </div>
     </main>
   );

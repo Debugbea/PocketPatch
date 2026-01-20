@@ -1,14 +1,28 @@
+"use client";
+import { useState } from "react";
+
 export default function PatchCard({ title, description, buttonText }) {
+  const [completed, setCompleted] = useState(false);
+
   return (
     <div style={styles.card}>
-  <h3 style={styles.title}>{title}</h3>
+      <h3 style={styles.title}>{title}</h3>
 
-  <p style={styles.description}>{description}</p>
+      {!completed && (
+        <p style={styles.description}>{description}</p>
+      )}
 
-  <button style={styles.button}>
-    {buttonText}
-  </button>
-</div>
+      <button
+        style={{
+          ...styles.button,
+          backgroundColor: completed ? "#9ca3af" : "#4f46e5",
+        }}
+        onClick={() => setCompleted(true)}
+        disabled={completed}
+      >
+        {completed ? "Completed ✅" : buttonText}
+      </button>
+    </div>
   );
 }
 

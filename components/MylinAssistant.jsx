@@ -1,73 +1,62 @@
 "use client";
 
-import { useState } from "react";
-import { MYLIN_MESSAGES } from "../lib/mylinMessages";
+export default function MylinAssistant({ context }) {
+  function getAdvice() {
+    if (!context) {
+      return [
+        "Hi, I’m MyLin 💛",
+        "Create a Patch and I’ll guide you — before purchase (save) or after purchase (refocus).",
+      ];
+    }
 
-export default function MylinAssistant() {
-  const [mode, setMode] = useState("beforePurchase"); // beforePurchase | afterPurchase | utilities
+    if (context.type === "flight" && context.mode === "before") {
+      const from = context.from || "your departure airport";
+      const to = context.to || "your destination";
 
-  const data = MYLIN_MESSAGES[mode];
+      const msgs = [];
+      msgs.push(`✈️ Before you buy: ${from} → ${to}`);
+      msgs.push("Quick save checks:");
+
+      if (context.flexible) {
+        msgs.push("• Since your dates are flexible (±2 days), check Tues/Wed departures + early morning flights.");
+        msgs.push("• Also check nearby airports if possible (sometimes big savings).");
+      } else {
+        msgs.push("• If you can wait 12–24 hours, prices sometimes dip (not always, but worth a quick recheck).");
+        msgs.push("• Try one nearby airport or a different return day if possible.");
+      }
+
+      msgs.push("Want a reminder patch: “Recheck flight price tomorrow” ?");
+      return msgs;
+    }
+
+    if (context.type === "flight" && context.mode === "after") {
+      const airline = context.airline || "your airline";
+      const price = context.price != null ? `$${context.price}` : "your price";
+
+      const msgs = [];
+      msgs.push(`✅ After purchase: ${airline} flight (${price})`);
+      msgs.push("Now we protect you (money + peace):");
+      msgs.push("• If you JUST bought it: check the airline’s 24-hour cancel window (often free).");
+      msgs.push("• Set a recheck reminder in 48 hours — if price drops, you may get credit (depends on airline/fare).");
+      msgs.push("• Reframe: This is handled. Next step is controlling the rest of the month.");
+      return msgs;
+    }
+
+    return ["I’m here — create a Patch and I’ll guide you."];
+  }
+
+  const advice = getAdvice();
 
   return (
-    <div style={styles.card}>
-      <div style={styles.header}>
-        <div>
-          <div style={styles.name}>Mylin</div>
-          <div style={styles.subtitle}>{data.title}</div>
-        </div>
-
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-          style={styles.select}
-        >
-          <option value="beforePurchase">Before Purchase</option>
-          <option value="afterPurchase">After Purchase</option>
-          <option value="utilities">Utilities</option>
-        </select>
-      </div>
-
-      <div style={styles.list}>
-        {data.prompts.map((text, i) => (
-          <div key={i} style={styles.bubble}>
-            {text}
+    <div style={{ border: "1px solid #eee", padding: "1rem", borderRadius: "12px", marginBottom: "1rem" }}>
+      <h2 style={{ marginTop: 0, marginBottom: "0.5rem" }}>MyLin Assistant</h2>
+      <div style={{ display: "grid", gap: "0.5rem" }}>
+        {advice.map((line, idx) => (
+          <div key={idx} style={{ padding: "0.6rem", background: "#fafafa", borderRadius: "10px" }}>
+            {line}
           </div>
         ))}
       </div>
     </div>
   );
 }
-
-const styles = {
-  card: {
-    border: "1px solid rgba(255,255,255,0.15)",
-    borderRadius: 16,
-    padding: 16,
-    maxWidth: 520,
-    background: "rgba(0,0,0,0.35)",
-    backdropFilter: "blur(10px)",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: 12,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  name: { fontWeight: 700, fontSize: 18 },
-  subtitle: { opacity: 0.85, fontSize: 13, marginTop: 2 },
-  select: {
-    borderRadius: 10,
-    padding: "8px 10px",
-    border: "1px solid rgba(255,255,255,0.2)",
-    background: "rgba(0,0,0,0.25)",
-    color: "inherit",
-  },
-  list: { display: "grid", gap: 10 },
-  bubble: {
-    padding: 12,
-    borderRadius: 14,
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.12)",
-  },
-};

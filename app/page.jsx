@@ -35,7 +35,18 @@ export default function Page() {
 
         {/* MyLin shows guidance based on the latest patch created */}
         <MylinAssistant context={mylinContext} />
-
+      
+        {/* NEW: Flight Pactch creator *}
+        <FlightPatch
+         onAnalyze={(data) => {
+           setMylinContext({
+             type: "flight",
+             price: data.price,
+             route: data.route,
+             timing: data.timing,
+          });
+        }}
+    />
         {/* NEW: Flight Patch creator */}
         <FlightPatch onCreate={setMylinContext} />
 

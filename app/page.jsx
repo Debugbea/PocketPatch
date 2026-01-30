@@ -1,14 +1,17 @@
 import PatchCard from "../components/PatchCard";
-
+import MylinAssistant from "../components/MylinAssistant";
 export default function Page() {
   return (
     <main
-      style={{
+     <MyLinAssistant />
+     
+     <div style={{
         minHeight: "100vh",
         background: "#f4f6f8",
         padding: "2rem",
         fontFamily: "sans-serif",
       }}
+  
     >
       <div
         style={{

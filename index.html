@@ -1,10 +1,37 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pocket Patch</title>
+
+  <!-- connect CSS -->
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <h1>🚀 Pocket Patch is Live!</h1>
-  <p>My habit & micro-task app is officially online.</p>
+  <header class="header">
+    <h1>Pocket Patch</h1>
+    <p class="sub">Track spending. Spot savings. Build smarter habits.</p>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Add a Purchase</h2>
+
+      <form id="purchaseForm">
+        <input id="itemName" placeholder="Item name" required>
+        <input id="storeName" placeholder="Store" required>
+        <input id="fixedTotal" type="number" step="0.01" placeholder="Total price" required>
+        <button type="submit">Save</button>
+      </form>
+
+      <p id="totalSpent">Total spent: $0.00</p>
+      <div id="purchaseList"></div>
+    </section>
+  </main>
+
+  <!-- connect JavaScript -->
+  <script src="app.js"></script>
 </body>
 </html>

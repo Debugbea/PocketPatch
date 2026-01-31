@@ -1,0 +1,276 @@
+// Pocket Patch MVP: purchases + weighted items + localStorage + basic "Mylin" insight
+
+const STORAGE_KEY = "pocketPatch_purchases_v1";
+
+const form = document.getElementById("purchaseForm");
+const itemNameEl = document.getElementById("itemName");
+const storeNameEl = document.getElementById("storeName");
+const purchaseDateEl = document.getElementById("purchaseDate");
+const pricingTypeEl = document.getElementById("pricingType");
+
+const fixedWrap = document.getElementById("fixedWrap");
+const fixedTotalEl = document.getElementById("fixedTotal");
+
+const weightWrap = document.getElementById("weightWrap");
+const weightUnitEl = document.getElementById("weightUnit");
+const unitPriceEl = document.getElementById("unitPrice");
+const weightAmountEl = document.getElementById("weightAmount");
+const calcTotalEl = document.getElementById("calcTotal");
+
+const listEl = document.getElementById("purchaseList");
+const totalSpentEl = document.getElementById("totalSpent");
+const mylinBox = document.getElementById("mylinBox");
+const clearAllBtn = document.getElementById("clearAll");
+
+function todayISO() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+purchaseDateEl.value = todayISO();
+
+function money(n) {
+  const num = Number(n);
+  if (!Number.isFinite(num)) return "$0.00";
+  return num.toLocaleString(undefined, { style: "currency", currency: "USD" });
+}
+
+function cleanItemName(name) {
+  return name.trim().toLowerCase();
+}
+
+function loadPurchases() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function savePurchases(purchases) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(purchases));
+}
+
+function computeWeightedTotal() {
+  const unitPrice = Number(unitPriceEl.value);
+  const weight = Number(weightAmountEl.value);
+  if (Number.isFinite(unitPrice) && Number.isFinite(weight) && unitPrice >= 0 && weight >= 0) {
+    const total = unitPrice * weight;
+    calcTotalEl.value = total.toFixed(2);
+    return total;
+  }
+  calcTotalEl.value = "";
+  return null;
+}
+
+function setPricingUI() {
+  const type = pricingTypeEl.value;
+
+  if (type === "fixed") {
+    fixedWrap.classList.remove("hidden");
+    weightWrap.classList.add("hidden");
+
+    // Clear weighted fields
+    weightUnitEl.value = "lb";
+    unitPriceEl.value = "";
+    weightAmountEl.value = "";
+    calcTotalEl.value = "";
+  } else {
+    fixedWrap.classList.add("hidden");
+    weightWrap.classList.remove("hidden");
+
+    // Clear fixed
+    fixedTotalEl.value = "";
+    computeWeightedTotal();
+  }
+}
+
+pricingTypeEl.addEventListener("change", setPricingUI);
+unitPriceEl.addEventListener("input", computeWeightedTotal);
+weightAmountEl.addEventListener("input", computeWeightedTotal);
+weightUnitEl.addEventListener("change", computeWeightedTotal);
+
+function render() {
+  const purchases = loadPurchases();
+
+  // Total spent
+  const total = purchases.reduce((sum, p) => sum + (Number(p.totalPrice) || 0), 0);
+  totalSpentEl.textContent = money(total);
+
+  // List
+  if (purchases.length === 0) {
+    listEl.innerHTML = `<p class="meta" style="color: rgba(233,236,255,.65); margin:0;">
+      No purchases yet. Add one above.
+    </p>`;
+  } else {
+    listEl.innerHTML = purchases
+      .slice()
+      .reverse()
+      .map((p) => {
+        const details =
+          p.pricingType === "weight"
+            ? `${p.weightAmount} ${p.weightUnit} @ ${money(p.unitPrice)}/${p.weightUnit}`
+            : `Fixed price`;
+
+        return `
+          <div class="item">
+            <div class="left">
+              <div class="name">${escapeHTML(p.itemNameDisplay)}</div>
+              <div class="meta">${escapeHTML(p.storeName)} • ${escapeHTML(p.date)} • ${details}</div>
+            </div>
+            <div class="right" style="display:flex; gap:10px; align-items:center;">
+              <div class="price">${money(p.totalPrice)}</div>
+              <button class="smallBtn" data-del="${p.id}">Delete</button>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  // Hook delete buttons
+  document.querySelectorAll("[data-del]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-del");
+      const next = loadPurchases().filter((p) => p.id !== id);
+      savePurchases(next);
+      render();
+      updateMylin();
+    });
+  });
+
+  updateMylin();
+}
+
+function escapeHTML(str) {
+  return String(str)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function updateMylin() {
+  const purchases = loadPurchases();
+  if (purchases.length === 0) {
+    mylinBox.innerHTML = `<strong>Mylin:</strong> Add purchases and I’ll start finding your cheapest stores.`;
+    return;
+  }
+
+  // Pick the most recent item and find cheapest unit price for that item (weighted only),
+  // else just say where you last bought it.
+  const last = purchases[purchases.length - 1];
+  const itemKey = last.itemKey;
+
+  const sameItem = purchases.filter((p) => p.itemKey === itemKey);
+
+  // If any weighted purchases exist for this item, compare by unitPrice
+  const weighted = sameItem.filter((p) => p.pricingType === "weight" && Number.isFinite(Number(p.unitPrice)));
+
+  if (weighted.length >= 2) {
+    const cheapest = weighted.reduce((best, p) => (Number(p.unitPrice) < Number(best.unitPrice) ? p : best), weighted[0]);
+
+    mylinBox.innerHTML = `<strong>Mylin:</strong> For <b>${escapeHTML(last.itemNameDisplay)}</b>, your cheapest so far is
+      <b>${escapeHTML(cheapest.storeName)}</b> at <b>${money(cheapest.unitPrice)}/${escapeHTML(cheapest.weightUnit)}</b>.`;
+    return;
+  }
+
+  // If fixed purchases, compare by total price (simple)
+  if (sameItem.length >= 2) {
+    const cheapest = sameItem.reduce((best, p) => (Number(p.totalPrice) < Number(best.totalPrice) ? p : best), sameItem[0]);
+    mylinBox.innerHTML = `<strong>Mylin:</strong> For <b>${escapeHTML(last.itemNameDisplay)}</b>, your cheapest total so far is
+      <b>${escapeHTML(cheapest.storeName)}</b> at <b>${money(cheapest.totalPrice)}</b>.`;
+    return;
+  }
+
+  mylinBox.innerHTML = `<strong>Mylin:</strong> Logged! Last time you bought <b>${escapeHTML(last.itemNameDisplay)}</b> at
+    <b>${escapeHTML(last.storeName)}</b> for <b>${money(last.totalPrice)}</b>.`;
+}
+
+function makeId() {
+  return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const itemName = itemNameEl.value.trim();
+  const storeName = storeNameEl.value.trim();
+  const date = purchaseDateEl.value;
+
+  if (!itemName || !storeName || !date) return;
+
+  const pricingType = pricingTypeEl.value;
+  let totalPrice = null;
+  let unitPrice = null;
+  let weightAmount = null;
+  let weightUnit = null;
+
+  if (pricingType === "fixed") {
+    const fixed = Number(fixedTotalEl.value);
+    if (!Number.isFinite(fixed) || fixed <= 0) {
+      alert("Enter a valid total price for fixed items.");
+      return;
+    }
+    totalPrice = fixed;
+  } else {
+    weightUnit = weightUnitEl.value;
+    unitPrice = Number(unitPriceEl.value);
+    weightAmount = Number(weightAmountEl.value);
+
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0 || !Number.isFinite(weightAmount) || weightAmount <= 0) {
+      alert("Enter a valid price per unit and weight.");
+      return;
+    }
+    totalPrice = unitPrice * weightAmount;
+  }
+
+  const purchase = {
+    id: makeId(),
+    itemKey: cleanItemName(itemName),
+    itemNameDisplay: itemName,
+    storeName,
+    date,
+    pricingType,
+    totalPrice: Number(totalPrice.toFixed(2)),
+    // weighted fields (nullable for fixed)
+    unitPrice: unitPrice !== null ? Number(unitPrice.toFixed(2)) : null,
+    weightAmount: weightAmount !== null ? Number(weightAmount.toFixed(2)) : null,
+    weightUnit
+  };
+
+  const purchases = loadPurchases();
+  purchases.push(purchase);
+  savePurchases(purchases);
+
+  // Reset form fields (keep date)
+  itemNameEl.value = "";
+  storeNameEl.value = "";
+
+  if (pricingType === "fixed") {
+    fixedTotalEl.value = "";
+  } else {
+    unitPriceEl.value = "";
+    weightAmountEl.value = "";
+    calcTotalEl.value = "";
+    weightUnitEl.value = "lb";
+  }
+
+  render();
+});
+
+clearAllBtn.addEventListener("click", () => {
+  const ok = confirm("Clear ALL saved purchases?");
+  if (!ok) return;
+  localStorage.removeItem(STORAGE_KEY);
+  render();
+});
+
+// init
+setPricingUI();
+render();

@@ -1,99 +1,130 @@
-// Pocket Patch (simple) - works with 3 inputs: itemName, storeName, fixedTotal
-const STORAGE_KEY = "pocketPatch_purchases_simple_v1";
+const purchaseForm = document.getElementById("purchaseForm");
+const itemsList = document.getElementById("itemsList");
+const savedWrap = document.getElementById("savedWrap");
 
-const form = document.getElementById("purchaseForm");
+const addItemBtn = document.getElementById("addItemBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+const storeEl = document.getElementById("store");
+const dateEl = document.getElementById("date");
+const totalEl = document.getElementById("total");
+const notesEl = document.getElementById("notes");
+
 const itemNameEl = document.getElementById("itemName");
-const storeNameEl = document.getElementById("storeName");
-const fixedTotalEl = document.getElementById("fixedTotal");
+const itemQtyEl = document.getElementById("itemQty");
+const itemPriceEl = document.getElementById("itemPrice");
+const itemCategoryEl = document.getElementById("itemCategory");
 
-const listEl = document.getElementById("purchaseList");
-const totalSpentEl = document.getElementById("totalSpent");
+let currentItems = [];
 
 function money(n) {
-  const num = Number(n);
-  if (!Number.isFinite(num)) return "$0.00";
-  return num.toLocaleString(undefined, { style: "currency", currency: "USD" });
+  return Number(n || 0).toFixed(2);
 }
 
 function loadPurchases() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    return JSON.parse(localStorage.getItem("pp_purchases")) || [];
   } catch {
     return [];
   }
 }
 
 function savePurchases(purchases) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(purchases));
+  localStorage.setItem("pp_purchases", JSON.stringify(purchases));
 }
 
-function makeId() {
-  return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+function renderCurrentItems() {
+  itemsList.innerHTML = "";
+  currentItems.forEach((it, idx) => {
+    const li = document.createElement("li");
+    li.className = "item";
+    li.innerHTML = `
+      <div><strong>${it.name}</strong><div class="small">${it.category}</div></div>
+      <div>Qty: ${it.qty}</div>
+      <div>$${money(it.price)}</div>
+      <div><span class="badge">$${money(it.qty * it.price)} total</span></div>
+      <button type="button" data-idx="${idx}">X</button>
+    `;
+    li.querySelector("button").addEventListener("click", () => {
+      currentItems.splice(idx, 1);
+      renderCurrentItems();
+    });
+    itemsList.appendChild(li);
+  });
 }
 
-function escapeHTML(str) {
-  return String(str)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function render() {
+function renderSaved() {
   const purchases = loadPurchases();
+  savedWrap.innerHTML = "";
 
-  // total spent
-  const total = purchases.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
-  totalSpentEl.textContent = `Total spent: ${money(total)}`;
-
-  // list
   if (purchases.length === 0) {
-    listEl.innerHTML = "";
+    savedWrap.innerHTML = `<div class="small">No purchases saved yet.</div>`;
     return;
   }
 
-  listEl.innerHTML = purchases
-    .slice()
-    .reverse()
-    .map(
-      (p) => `
-      <div style="margin-top:10px; padding:10px; border:1px solid rgba(255,255,255,.12); border-radius:12px;">
-        <div><b>${escapeHTML(p.item)}</b> — ${escapeHTML(p.store)}</div>
-        <div>${money(p.price)}</div>
+  purchases.slice().reverse().forEach((p) => {
+    const div = document.createElement("div");
+    div.className = "saved-card";
+
+    const itemsHtml = p.items.map(i =>
+      `<li>${i.name} (${i.category}) — Qty ${i.qty} — $${money(i.price)}</li>`
+    ).join("");
+
+    div.innerHTML = `
+      <div class="row">
+        <div><strong>${p.store}</strong> <span class="small">(${p.date})</span></div>
+        <div><strong>Total:</strong> $${money(p.total)}</div>
       </div>
-    `
-    )
-    .join("");
+      <div class="small">${p.notes ? p.notes : ""}</div>
+      <ul class="small">${itemsHtml}</ul>
+    `;
+    savedWrap.appendChild(div);
+  });
 }
 
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
+addItemBtn.addEventListener("click", () => {
+  const name = itemNameEl.value.trim();
+  const qty = Number(itemQtyEl.value);
+  const price = Number(itemPriceEl.value);
+  const category = itemCategoryEl.value;
 
-  const item = itemNameEl.value.trim();
-  const store = storeNameEl.value.trim();
-  const price = Number(fixedTotalEl.value);
+  if (!name || !qty || qty < 1 || isNaN(price)) return;
 
-  if (!item || !store) {
-    alert("Enter item and store.");
-    return;
-  }
-  if (!Number.isFinite(price) || price <= 0) {
-    alert("Enter a valid price.");
-    return;
-  }
+  currentItems.push({ name, qty, price, category });
 
-  const purchases = loadPurchases();
-  purchases.push({ id: makeId(), item, store, price: Number(price.toFixed(2)) });
-  savePurchases(purchases);
-
-  // clear inputs
   itemNameEl.value = "";
-  storeNameEl.value = "";
-  fixedTotalEl.value = "";
+  itemQtyEl.value = 1;
+  itemPriceEl.value = "";
 
-  render();
+  renderCurrentItems();
 });
 
-render();
+clearBtn.addEventListener("click", () => {
+  purchaseForm.reset();
+  currentItems = [];
+  renderCurrentItems();
+});
+
+purchaseForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+
+  const purchase = {
+    id: crypto.randomUUID(),
+    store: storeEl.value.trim(),
+    date: dateEl.value,
+    total: Number(totalEl.value),
+    notes: notesEl.value.trim(),
+    items: currentItems
+  };
+
+  const purchases = loadPurchases();
+  purchases.push(purchase);
+  savePurchases(purchases);
+
+  purchaseForm.reset();
+  currentItems = [];
+  renderCurrentItems();
+  renderSaved();
+});
+
+renderSaved();

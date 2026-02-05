@@ -4,7 +4,18 @@ const savedWrap = document.getElementById("savedWrap");
 
 const addItemBtn = document.getElementById("addItemBtn");
 const clearBtn = document.getElementById("clearBtn");
+receiptImgEl.addEventListener("change", () => {
+  const file = receiptImgEl.files[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+  reader.onload = () => {
+    receiptBase64 = reader.result;
+    receiptPreviewEl.src = receiptBase64;
+    previewWrap.style.display = "block";
+  };
+  reader.readAsDataURL(file);
+});
 const storeEl = document.getElementById("store");
 const dateEl = document.getElementById("date");
 const totalEl = document.getElementById("total");

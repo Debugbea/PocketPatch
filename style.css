@@ -117,18 +117,5 @@ input::placeholder { color: rgba(233, 236, 255, 0.55); }
 .small { font-size: 13px; opacity: 0.85; }
 .row { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
-receiptImgEl.addEventListener("change", () => {
-  const file = receiptImgEl.files && receiptImgEl.files[0];
-  if (!file) return;
 
-  const reader = new FileReader();
-
-  reader.onload = () => {
-    receiptBase64 = reader.result;
-    receiptPreviewEl.src = receiptBase64;
-    previewWrap.style.display = "block";
-  };
-
-  reader.readAsDataURL(file);
-});
 

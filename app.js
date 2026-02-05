@@ -4,9 +4,11 @@ const savedWrap = document.getElementById("savedWrap");
 
 const addItemBtn = document.getElementById("addItemBtn");
 const clearBtn = document.getElementById("clearBtn");
-receiptImgEl.addEventListener("change", () => {
-  const file = receiptImgEl.files[0];
-  if (!file) return;
+const receiptImgEl = document.getElementById("receiptImg");
+const receiptPreviewEl = document.getElementById("receiptPreview");
+const previewWrap = document.querySelector(".preview-wrap");
+
+let receiptBase64 = "";
 
   const reader = new FileReader();
   reader.onload = () => {
@@ -136,6 +138,20 @@ purchaseForm.addEventListener("submit", (e) => {
   currentItems = [];
   renderCurrentItems();
   renderSaved();
+});
+receiptImgEl.addEventListener("change", () => {
+  const file = receiptImgEl.files && receiptImgEl.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    receiptBase64 = reader.result;
+    receiptPreviewEl.src = receiptBase64;
+    previewWrap.style.display = "block";
+  };
+
+  reader.readAsDataURL(file);
 });
 
 renderSaved();

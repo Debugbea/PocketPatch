@@ -133,6 +133,7 @@ purchaseForm.addEventListener("submit", (e) => {
   const purchases = loadPurchases();
   purchases.push(purchase);
   savePurchases(purchases);
+  alert("Purchase savedd!");
 
   purchaseForm.reset();
   currentItems = [];

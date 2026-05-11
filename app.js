@@ -1,158 +1,83 @@
+let items = [];
+
 const purchaseForm = document.getElementById("purchaseForm");
 const itemsList = document.getElementById("itemsList");
 const savedWrap = document.getElementById("savedWrap");
 
-const addItemBtn = document.getElementById("addItemBtn");
-const clearBtn = document.getElementById("clearBtn");
-const receiptImgEl = document.getElementById("receiptImg");
-const receiptPreviewEl = document.getElementById("receiptPreview");
-const previewWrap = document.querySelector(".preview-wrap");
-
-let receiptBase64 = "";
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    receiptBase64 = reader.result;
-    receiptPreviewEl.src = receiptBase64;
-    previewWrap.style.display = "block";
-  };
-  reader.readAsDataURL(file);
-});
-const storeEl = document.getElementById("store");
-const dateEl = document.getElementById("date");
-const totalEl = document.getElementById("total");
-const notesEl = document.getElementById("notes");
-
-const itemNameEl = document.getElementById("itemName");
-const itemQtyEl = document.getElementById("itemQty");
-const itemPriceEl = document.getElementById("itemPrice");
-const itemCategoryEl = document.getElementById("itemCategory");
-
-let currentItems = [];
-
-function money(n) {
-  return Number(n || 0).toFixed(2);
+function showApp() {
+  document.querySelector(".welcome").classList.add("hidden");
+  document.getElementById("tracker").classList.remove("hidden");
 }
 
-function loadPurchases() {
-  try {
-    return JSON.parse(localStorage.getItem("pp_purchases")) || [];
-  } catch {
-    return [];
-  }
-}
+document.getElementById("addItemBtn").addEventListener("click", () => {
+  const name = document.getElementById("itemName").value.trim();
+  const qty = document.getElementById("itemQty").value;
+  const price = document.getElementById("itemPrice").value;
+  const category = document.getElementById("itemCategory").value;
 
-function savePurchases(purchases) {
-  localStorage.setItem("pp_purchases", JSON.stringify(purchases));
-}
-
-function renderCurrentItems() {
-  itemsList.innerHTML = "";
-  currentItems.forEach((it, idx) => {
-    const li = document.createElement("li");
-    li.className = "item";
-    li.innerHTML = `
-      <div><strong>${it.name}</strong><div class="small">${it.category}</div></div>
-      <div>Qty: ${it.qty}</div>
-      <div>$${money(it.price)}</div>
-      <div><span class="badge">$${money(it.qty * it.price)} total</span></div>
-      <button type="button" data-idx="${idx}">X</button>
-    `;
-    li.querySelector("button").addEventListener("click", () => {
-      currentItems.splice(idx, 1);
-      renderCurrentItems();
-    });
-    itemsList.appendChild(li);
-  });
-}
-
-function renderSaved() {
-  const purchases = loadPurchases();
-  savedWrap.innerHTML = "";
-
-  if (purchases.length === 0) {
-    savedWrap.innerHTML = `<div class="small">No purchases saved yet.</div>`;
+  if (!name || !price) {
+    alert("Add item name and price");
     return;
   }
 
-  purchases.slice().reverse().forEach((p) => {
-    const div = document.createElement("div");
-    div.className = "saved-card";
+  items.push({ name, qty, price, category });
 
-    const itemsHtml = p.items.map(i =>
-      `<li>${i.name} (${i.category}) — Qty ${i.qty} — $${money(i.price)}</li>`
-    ).join("");
+  const li = document.createElement("li");
+  li.textContent = `${name} x${qty} - $${price} (${category})`;
+  itemsList.appendChild(li);
 
-    div.innerHTML = `
-      <div class="row">
-        <div><strong>${p.store}</strong> <span class="small">(${p.date})</span></div>
-        <div><strong>Total:</strong> $${money(p.total)}</div>
-      </div>
-      <div class="small">${p.notes ? p.notes : ""}</div>
-      <ul class="small">${itemsHtml}</ul>
-    `;
-    savedWrap.appendChild(div);
-  });
-}
-
-addItemBtn.addEventListener("click", () => {
-  const name = itemNameEl.value.trim();
-  const qty = Number(itemQtyEl.value);
-  const price = Number(itemPriceEl.value);
-  const category = itemCategoryEl.value;
-
-  if (!name || !qty || qty < 1 || isNaN(price)) return;
-
-  currentItems.push({ name, qty, price, category });
-
-  itemNameEl.value = "";
-  itemQtyEl.value = 1;
-  itemPriceEl.value = "";
-
-  renderCurrentItems();
-});
-
-clearBtn.addEventListener("click", () => {
-  purchaseForm.reset();
-  currentItems = [];
-  renderCurrentItems();
+  document.getElementById("itemName").value = "";
+  document.getElementById("itemQty").value = 1;
+  document.getElementById("itemPrice").value = "";
 });
 
 purchaseForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const purchase = {
-    id: crypto.randomUUID(),
-    store: storeEl.value.trim(),
-    date: dateEl.value,
-    total: Number(totalEl.value),
-    notes: notesEl.value.trim(),
-    items: currentItems
+    store: document.getElementById("store").value,
+    date: document.getElementById("date").value,
+    total: document.getElementById("total").value,
+    notes: document.getElementById("notes").value,
+    items: items
   };
 
-  const purchases = loadPurchases();
+  const purchases = JSON.parse(localStorage.getItem("pocketPatchPurchases")) || [];
   purchases.push(purchase);
-  savePurchases(purchases);
-  alert("Purchase savedd!");
+  localStorage.setItem("pocketPatchPurchases", JSON.stringify(purchases));
 
   purchaseForm.reset();
-  currentItems = [];
-  renderCurrentItems();
-  renderSaved();
-});
-receiptImgEl.addEventListener("change", () => {
-  const file = receiptImgEl.files && receiptImgEl.files[0];
-  if (!file) return;
+  items = [];
+  itemsList.innerHTML = "";
 
-  const reader = new FileReader();
-
-  reader.onload = () => {
-    receiptBase64 = reader.result;
-    receiptPreviewEl.src = receiptBase64;
-    previewWrap.style.display = "block";
-  };
-
-  reader.readAsDataURL(file);
+  renderPurchases();
+  alert("Purchase saved!");
 });
 
-renderSaved();
+document.getElementById("clearBtn").addEventListener("click", () => {
+  purchaseForm.reset();
+  items = [];
+  itemsList.innerHTML = "";
+});
+
+function renderPurchases() {
+  const purchases = JSON.parse(localStorage.getItem("pocketPatchPurchases")) || [];
+
+  savedWrap.innerHTML = "";
+
+  purchases.reverse().forEach((p) => {
+    const div = document.createElement("div");
+    div.className = "saved-card";
+
+    div.innerHTML = `
+      <h4>${p.store}</h4>
+      <p><strong>Date:</strong> ${p.date}</p>
+      <p><strong>Total:</strong> $${p.total}</p>
+      <p>${p.notes || ""}</p>
+    `;
+
+    savedWrap.appendChild(div);
+  });
+}
+
+renderPurchases();
